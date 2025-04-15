@@ -52,7 +52,7 @@ frappe.pages["vendor-followup"].on_page_load = function (wrapper) {
         fieldname: 'status',
         label: __('Status'),
         fieldtype: 'Select',
-        options: ["",'To Receive and Bill', 'To Receive'].join('\n')
+        options: ["",'To Receive and Bill', 'To Bill'].join('\n')
     });
 
     // // // Add Search button
