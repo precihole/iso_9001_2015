@@ -22,8 +22,8 @@
  "list_columns": [],
  "login_required": 0,
  "max_attachment_size": 0,
- "modified": "2025-03-11 10:44:35.833929",
- "modified_by": "midhat@preciholesports.com",
+ "modified": "2025-04-21 12:40:15.062260",
+ "modified_by": "Administrator",
  "module": "Iso 9001 2015",
  "name": "supplier-registration",
  "owner": "midhat@preciholesports.com",
@@ -479,6 +479,32 @@
    "precision": "",
    "read_only": 0,
    "reqd": 1,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "fieldname": "requester_sign",
+   "fieldtype": "Signature",
+   "hidden": 1,
+   "label": "Requester Sign",
+   "max_length": 0,
+   "max_value": 0,
+   "precision": "",
+   "read_only": 0,
+   "reqd": 0,
+   "show_in_filter": 0
+  },
+  {
+   "allow_read_on_all_link_options": 0,
+   "fieldname": "manager_sign",
+   "fieldtype": "Signature",
+   "hidden": 1,
+   "label": "Manager Sign",
+   "max_length": 0,
+   "max_value": 0,
+   "precision": "",
+   "read_only": 0,
+   "reqd": 0,
    "show_in_filter": 0
   }
  ]

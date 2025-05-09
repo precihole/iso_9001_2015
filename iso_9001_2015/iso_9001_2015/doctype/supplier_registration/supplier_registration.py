@@ -137,27 +137,32 @@ class SupplierRegistration(Document):
 
 
 
-
-
-
-# import frappe
+# Import the frappe module for Frappe functionality
+import frappe
 import requests
 
+# Define a whitelisted function that can be called from the client side
 @frappe.whitelist()
-def get_gst_details(gst_no):  # Use gst_no instead of doc.gst_no
+def get_gst_details(gst_no):  # Use gst_no parameter instead of doc.gst_no
+    # URL to fetch GSTIN details from the external API, using the provided GST number
     url = f"https://gsp.adaequare.com/test/enriched/ewb/master/GetGSTINDetails?GSTIN={gst_no}"
     
+    # Define the headers required for the API request, including the API keys and authorization token
     headers = {
-        'x-rapidapi-host': 'gst-return-status.p.rapidapi.com',
-        'x-rapidapi-key': '60cd4c7bcdmshdcf4ab58e1d3aa7p100239jsn88cb5c60cde3',
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'
+        'x-rapidapi-host': 'gst-return-status.p.rapidapi.com',  # Host for the GST API service
+        'x-rapidapi-key': '60cd4c7bcdmshdcf4ab58e1d3aa7p100239jsn88cb5c60cde3',  # RapidAPI key for authentication
+        'Accept': 'application/json',  # Accept JSON response
+        'Content-Type': 'application/json',  # Content type for the request
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'  # Bearer token for authorization
     }
     
     try:
+        # Send GET request to the external API to fetch GST details
         response = requests.get(url, headers=headers)
-        response.raise_for_status()  # Ensure successful response
-        return response.json()  # Send response data back
+        response.raise_for_status()  # Ensure the request was successful (status code 200)
+        
+        # Return the response data in JSON format
+        return response.json()  # Send response data back to the caller
     except requests.exceptions.RequestException as e:
-        frappe.throw(f"API Request Failed: {str(e)}")
+        # Handle any exceptions that occur during the API request and raise an error in Frappe
+        frappe.throw(f"API Request Failed: {str(e)}")  # Show an error message if the request fails

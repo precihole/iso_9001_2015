@@ -137,12 +137,12 @@ app_license = "mit"
 # 	"all": [
 # 		"iso_9001_2015.tasks.all"
 # 	],
-# 	"daily": [
-# 		"iso_9001_2015.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"iso_9001_2015.tasks.hourly"
-# 	],
+	# "daily": [
+	# 	"iso_9001_2015.iso_9001_2015.web_form.supplier_registration.supplier_registration.update_gsp_token"
+	# ],
+	# "hourly": [
+	# 	"iso_9001_2015.iso_9001_2015.web_form.supplier_registration.supplier_registration.update_gsp_token"			
+	# ]
 # 	"weekly": [
 # 		"iso_9001_2015.tasks.weekly"
 # 	],

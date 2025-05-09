@@ -187,47 +187,58 @@
 
 
 
-
 frappe.ui.form.on('Vendor Monitoring', {
+    // Trigger when 'general_templates' field is modified
     general_templates: function(frm) {
+        // Check if the 'general_templates' field is filled
         if (frm.doc.general_templates) {
+            // Fetch the 'General Template' document using the selected template ID
             frappe.db.get_doc('General Template', frm.doc.general_templates)
                 .then(template => {
+                    // Clear any existing entries in the feedback table
                     frm.clear_table('feedback');
 
+                    // If the template contains criteria, populate the feedback table
                     if (template.criteria && template.criteria.length > 0) {
                         template.criteria.forEach(row => {
-                            let child = frm.add_child('feedback');
-                            child.criteria = row.criteria.trim();
-                            child.rating = row.rating || "";
-                            child.comment = row.comment || "";
+                            let child = frm.add_child('feedback');  // Add a new row in the feedback table
+                            child.criteria = row.criteria.trim();  // Set the criteria
+                            child.rating = row.rating || "";  // Set the rating (if available)
+                            child.comment = row.comment || "";  // Set the comment (if available)
                         });
 
-                        frm.refresh_field('feedback');
-                        setupRatingChangeListener(frm);
+                        frm.refresh_field('feedback');  // Refresh the feedback field to show the updated rows
+                        setupRatingChangeListener(frm);  // Set up event listener for rating changes
                     }
                 })
                 .catch(() => {
+                    // Show an error message if fetching the template fails
                     frappe.msgprint(__('Error loading template.'));
                 });
         } else {
+            // If no template is selected, clear the feedback table and refresh it
             frm.clear_table('feedback');
             frm.refresh_field('feedback');
         }
     },
 
+    // Trigger when 'supplier_name' field is modified
     supplier_name: function(frm) {
+        // Check if the supplier name is provided
         if (!frm.doc.supplier_name) return;
 
         console.log("Fetching QA Inspection and Purchase Data for supplier:", frm.doc.supplier_name);
+
+        // Fetch vendor monitoring data using an API call
         frappe.call({
             method: "iso_9001_2015.iso_9001_2015.doctype.vendor_monitoring.vendor_monitoring.get_vendor_monitoring_data",
             args: {
-                supplier_name: frm.doc.supplier_name
+                supplier_name: frm.doc.supplier_name  // Pass supplier name as parameter
             },
             callback: function(response) {
-                let data = response.message || {};
+                let data = response.message || {};  // Extract response data
 
+                // If no QA inspection records are found, log and exit
                 if (!data.qa_inspection || data.qa_inspection.length === 0) {
                     console.log("No QA Inspection records found for this supplier.");
                     return;
@@ -235,25 +246,29 @@ frappe.ui.form.on('Vendor Monitoring', {
 
                 console.log("QA Inspection Data:", data);
 
+                // Variables to track totals for different metrics
                 let total_accepted_qty = 0, total_reject = 0, total_rework = 0;
                 let total_good = 0, total_bad = 0, total_condition_count = 0;
 
+                // Process each QA inspection row to calculate totals
                 data.qa_inspection.forEach(row => {
                     total_reject += row.total_reject || 0;
                     total_rework += row.total_rework || 0;
                     total_accepted_qty += row.total_accepted_qty || 0;
 
+                    // Count the condition of goods
                     if (row.condition_of_goods_on_arrival) {
                         total_condition_count++;
                         row.condition_of_goods_on_arrival === "Good" ? total_good++ : total_bad++;
                     }
                 });
 
+                // Calculate rejection, rework, and condition percentages
                 let reject_percentage = total_accepted_qty > 0 ? (((total_reject / total_accepted_qty) * 100)-100).toFixed(2) : "0.00";
                 let rework_percentage = total_accepted_qty > 0 ? (((total_rework / total_accepted_qty) * 100)-100).toFixed(2) : "0.00";
                 let good_percentage = total_condition_count > 0 ? ((total_good / total_condition_count) * 100).toFixed(2) : "0.00";
 
-                // ✅ On-Time Delivery Calculation
+                // ✅ Calculate On-Time Delivery Percentage
                 let total_orders = data.purchase_orders.length;
                 let on_time_count = 0;
 
@@ -269,7 +284,6 @@ frappe.ui.form.on('Vendor Monitoring', {
                                 on_time_count++;
                             }
                         }
-                        
                     });
                 }
 
@@ -277,6 +291,7 @@ frappe.ui.form.on('Vendor Monitoring', {
 
                 console.log("✅ On-Time Delivery Percentage:", on_time_percentage);
 
+                // Create a map of criteria with corresponding calculated percentages
                 let criteria_map = {
                     "Rework": Math.abs(parseFloat(rework_percentage)),
                     "Reject": Math.abs(parseFloat(reject_percentage)),
@@ -297,10 +312,10 @@ frappe.ui.form.on('Vendor Monitoring', {
                 Object.keys(criteria_map).forEach(criteria => {
                     let key = criteria.toLowerCase();
                     if (feedback_map[key]) {
-                        feedback_map[key].rating = criteria_map[criteria];
+                        feedback_map[key].rating = criteria_map[criteria];  // Update existing row with new rating
                         console.log(`✅ Updated ${criteria} Rating: ${feedback_map[key].rating}`);
                     } else {
-                        // ✅ Add missing criteria row
+                        // ✅ Add missing criteria row to feedback table
                         let child = frm.add_child('feedback');
                         child.criteria = criteria;
                         child.rating = criteria_map[criteria];
@@ -308,27 +323,31 @@ frappe.ui.form.on('Vendor Monitoring', {
                     }
                 });
 
-                frm.refresh_field("feedback");
-                calculateTotalPercentage(frm);
+                frm.refresh_field("feedback");  // Refresh feedback table to reflect updates
+                calculateTotalPercentage(frm);  // Recalculate the total percentage
             }
         });
     },
 
+    // Trigger when the form is refreshed
     refresh: function(frm) {
-        setupRatingChangeListener(frm);
+        setupRatingChangeListener(frm);  // Set up event listener for rating changes
     }
 });
 
+// Function to set up a listener for rating changes in the feedback table
 function setupRatingChangeListener(frm) {
     frm.fields_dict['feedback'].grid.wrapper.on('change', 'input[data-fieldname="rating"]', function() {
-        calculateTotalPercentage(frm);
+        calculateTotalPercentage(frm);  // Recalculate total percentage when a rating is changed
     });
 }
 
+// Function to calculate the total percentage of ratings
 function calculateTotalPercentage(frm) {
     let total_rating = 0;
     let total_count = 0;
 
+    // Loop through each feedback row and accumulate the ratings
     frm.doc.feedback.forEach(row => {
         let rating_value = parseFloat(row.rating);
         if (!isNaN(rating_value)) {
@@ -337,10 +356,10 @@ function calculateTotalPercentage(frm) {
         }
     });
 
-    // Calculate the average rating out of 100
+    // Calculate the average rating as a percentage
     let total_percentage = total_count > 0 ? (total_rating / total_count) : 0;
 
-    // Ensure the total percentage is out of 100
+    // Set the total percentage value in the form and refresh the field
     frm.set_value('total_percentage', total_percentage.toFixed(2));
     frm.refresh_field('total_percentage');
 }

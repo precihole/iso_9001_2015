@@ -1,29 +1,77 @@
 import frappe
 import requests
-import frappe
 import uuid
 
+
+# # This function is called when Frappe renders the page context
 def get_context(context):
-	# do your magic here
-	pass
+    pass
+
+# # app/api_token_updater.py
+# def on_refresh(self):
+#     frappe.msgprint("Updating GSP Token...")
+#     try:
+#         url = "https://gsp.adaequare.com/gsp/authenticate?grant_type=token"
+
+#         headers = {
+#             "Content-Type": "application/json",
+#             "accept": "application/json",
+#         }
+
+#         response = requests.post(url, headers=headers)
+#         response.raise_for_status()
+
+#         data = response.json()
+#         access_token = data.get("access_token")
+
+#         if not access_token:
+#             frappe.throw("No access token received from GSP API")
+
+#         iso_settings = frappe.get_single("ISO Settings")
+#         iso_settings.authorization = access_token
+#         iso_settings.save()
+#         frappe.db.commit()
+
+#         frappe.logger().info("GSP Token updated successfully.")
+
+#     except Exception:
+#         frappe.log_error(frappe.get_traceback(), "GSP Token Update Failed")
+
+
+
 
 @frappe.whitelist()
-# def fetch_token():
-
 def fetch_gst_data(gst_no):
-    length = 8
-    random_string = str(uuid.uuid4()).replace('-', '')[:length]
-    url = f"https://gsp.adaequare.com/test/enriched/ewb/master/GetGSTINDetails?GSTIN={gst_no}"  # Replace with actual GST API
-    headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZSI6WyJnc3AiXSwiZXhwIjoxNzQyMjA3NDg2LCJhdXRob3JpdGllcyI6WyJST0xFX1NCX0FQSV9UQVhfQ0FMQ1VMQVRJT04iLCJST0xFX1NCX0FQSV9HU1RfQ09NTU9OIiwiUk9MRV9TQl9FX0FQSV9HU1RfUkVUVVJOUyIsIlJPTEVfU0JfQVBJX0dTVF9SRVRVUk5TIiwiUk9MRV9TQl9BUElfRVdCIiwiUk9MRV9TQl9FX0FQSV9FV0IiLCJST0xFX1NCX0VfQVBJX0dTVF9DT01NT04iLCJST0xFX1NCX0FQSV9FSSIsIlJPTEVfU0JfRV9BUElfRUkiLCJST0xFX1NCX0FQSV9HU1BfT1RIRVJTIl0sImp0aSI6IjVhMzY3OTgyLTRlZjAtNGYwMC05MzI1LWMwZWVmNTMzNThiNyIsImNsaWVudF9pZCI6IkVERjZFMkExMjdFNTQyQkVBMzk3MjVCODQ1MkZEMUM0In0.-Rpo8KLdTSpSN-2BuyLBd_efkwFjLxSaIyJny5t3vt0",
-               "Content-Type": "application/json",
-               "username": "05AAACG2115R1ZN",
-               "password": "abc123@@",
-               "gstin": "05AAACG2115R1ZN",
-               "requestid":random_string
-               }
+    # Generate a random 8-character string for request ID
+    random_string = str(uuid.uuid4()).replace('-', '')[:8]
 
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return {"error": "Invalid GST Number"}
+    # API endpoint with GST number
+    url = f"https://gsp.adaequare.com/test/enriched/ewb/master/GetGSTINDetails?GSTIN={gst_no}"
+
+    # Fetch token from ISO Settings doctype
+    token = frappe.db.get_single_value('ISO Settings', 'authorization')
+
+    # Prepare headers for the API request
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+        "Username": frappe.db.get_single_value('ISO Settings', 'username'),
+        "Password": frappe.db.get_single_value('ISO Settings', 'password'),
+        "gstin": "05AAACG2115R1ZN",  # Static GSTIN (as per your example)
+        "requestid": random_string
+    }
+
+    try:
+        # Send GET request to the GST API
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            # Return the API response JSON directly
+            result = response.json()
+            return result
+        else:
+            # Return error message if API response code is not 200
+            return {"error": f"API request failed with status code {response.status_code}"}
+    except requests.exceptions.RequestException as e:
+        # Log error if request fails and return error message
+        frappe.log_error(f"GST API call failed: {str(e)}", "GST API Error")
+        return {"error": "Failed to connect to GST API"}
