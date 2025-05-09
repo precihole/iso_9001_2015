@@ -60,6 +60,7 @@ def fetch_gst_data(gst_no):
         "gstin": "05AAACG2115R1ZN",  # Static GSTIN (as per your example)
         "requestid": random_string
     }
+    
     try:
         # Send GET request to the GST API
         response = requests.get(url, headers=headers)
