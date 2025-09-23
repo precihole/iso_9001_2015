@@ -55,20 +55,6 @@ frappe.pages["vendor-followup"].on_page_load = function (wrapper) {
         options: ["",'To Receive and Bill', 'To Bill'].join('\n')
     });
 
-    // // // Add Search button
-    // page.search_button = page.add_field({
-    //     fieldname: 'search',
-    //     label: __('Search'),
-    //     fieldtype: 'Button',
-    //     click: function () {
-    //         load_data();
-    //     }
-    // });
-
-    // // Add a Bootstrap class to the button
-    // page.search_button.$wrapper.addClass('btn btn-light');
-
-
 
 
     // Add Search button with Bootstrap class from the start
@@ -163,13 +149,27 @@ frappe.pages["vendor-followup"].on_page_load = function (wrapper) {
         });
         container.html(html);
 
+
         container.find('.msgprint-btn').click(function () {
             var button = $(this);
             var supplier = button.data('supplier');
             var email = button.data('email');
+            var po_name = button.data('po');
+            var schedule_date = button.data('schedule-date');
+
+            // Prepare preview message in the same format as Python
+            var user_fullname = frappe.session.user_fullname || "Your Name";  
+            var preview_message = `
+                Dear ${supplier},<br><br>
+                This is a reminder regarding Purchase Order <b>${po_name}</b>,
+                scheduled for delivery on <b>${schedule_date}</b>.<br><br>
+                Kindly confirm the delivery status.<br><br>
+                Best regards,<br>
+                ${user_fullname}<br>
+            `;
 
             var d = new frappe.ui.Dialog({
-                title: 'Enter details',
+                title: 'Send Follow-Up Email',
                 fields: [
                     {
                         label: 'Supplier Name',
@@ -186,12 +186,25 @@ frappe.pages["vendor-followup"].on_page_load = function (wrapper) {
                         read_only: 1
                     },
                     {
-                        label: 'Email',
-                        fieldname: 'email',
-                        fieldtype: 'Text'
+                        label: 'Email Preview',
+                        fieldname: 'email_preview',
+                        fieldtype: 'HTML',
+                        options: preview_message
+                    },
+                    {
+                        fieldname: 'po_name',
+                        fieldtype: 'Data',
+                        default: po_name,
+                        hidden: 1
+                    },
+                    {
+                        fieldname: 'schedule_date',
+                        fieldtype: 'Data',
+                        default: schedule_date,
+                        hidden: 1
                     }
                 ],
-                size: 'small',
+                size: 'large',
                 primary_action_label: 'Send',
                 primary_action(values) {
                     if (!values.contact_email) {
@@ -200,25 +213,23 @@ frappe.pages["vendor-followup"].on_page_load = function (wrapper) {
                     }
 
                     frappe.call({
-                        method: 'iso_9001_2015.iso_9001_2015.page.vendor_followup.vendor_followup.send_supplier_email',
+                        method: "iso_9001_2015.iso_9001_2015.page.vendor_followup.vendor_followup.send_supplier_email",
                         args: {
-                            supplier_email: values.contact_email,
-                            subject: 'Follow Up',
-                            message: values.email
+                            supplier: values.supplier_name,
+                            email: values.contact_email,
+                            po_name: values.po_name,
+                            schedule_date: values.schedule_date
                         },
                         callback: function (r) {
-                            if (r.message.status === 'success') {
-                                frappe.msgprint('Email sent successfully');
-                            } else {
-                                frappe.msgprint('Error sending email: ' + r.message.message);
-                            }
-                            d.hide();
+                            frappe.msgprint(r.message);
                         }
                     });
+                    d.hide();
                 }
             });
             d.show();
         });
+
     }
    // Initial Data Load - Load all data only if no filters are applied
    setTimeout(() => {
@@ -227,3 +238,23 @@ frappe.pages["vendor-followup"].on_page_load = function (wrapper) {
         }
     }, 500); // Small delay to ensure filters are not set yet
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

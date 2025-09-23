@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class ISOSettings(Document):
+class ISOSetting(Document):
 	pass

@@ -1,76 +1,98 @@
 import frappe
 import requests
 import uuid
+from frappe.utils import add_days, nowdate, getdate, today
 
+BASE_URL = "https://gsp.adaequare.com"  # ✅ correct spelling
 
-# # This function is called when Frappe renders the page context
 def get_context(context):
     pass
 
-# # app/api_token_updater.py
-# def on_refresh(self):
-#     frappe.msgprint("Updating GSP Token...")
-#     try:
-#         url = "https://gsp.adaequare.com/gsp/authenticate?grant_type=token"
-
-#         headers = {
-#             "Content-Type": "application/json",
-#             "accept": "application/json",
-#         }
-
-#         response = requests.post(url, headers=headers)
-#         response.raise_for_status()
-
-#         data = response.json()
-#         access_token = data.get("access_token")
-
-#         if not access_token:
-#             frappe.throw("No access token received from GSP API")
-
-#         iso_settings = frappe.get_single("ISO Settings")
-#         iso_settings.authorization = access_token
-#         iso_settings.save()
-#         frappe.db.commit()
-
-#         frappe.logger().info("GSP Token updated successfully.")
-
-#     except Exception:
-#         frappe.log_error(frappe.get_traceback(), "GSP Token Update Failed")
+def get_valid_token():
+    """Return a valid token (refresh if expired, missing, or expiring in <=5 days)."""
+    iso = frappe.get_single("ISO Setting")
+    needs_refresh = (
+        not iso.authorization
+        or not iso.expiry_date
+        or (getdate(iso.expiry_date) - getdate(today())).days <= 5
+    )
+    if needs_refresh:
+        update_gsp_token()
+    return frappe.db.get_single_value("ISO Setting", "authorization")
 
 
+def update_gsp_token():
+    """Authenticate with Adaequare and store access_token + expiry_date."""
+    iso = frappe.get_single("ISO Setting")
+    url = f"{BASE_URL}/gsp/authenticate?grant_type=token"
+
+    headers = {
+        "gspappid": iso.gspappid,
+        "gspappsecret": iso.gspappsecret,
+        "accept": "application/json",
+    }
+
+    try:
+        resp = requests.post(url, headers=headers, timeout=30)
+        frappe.logger().info(f"GSP auth status={resp.status_code}, body={resp.text}")
+        resp.raise_for_status()
+        data = resp.json()
+
+        token = data.get("access_token")
+        if not token:
+            frappe.throw(f"No access_token in response: {data}")
+
+        iso.authorization = token
+
+        expires_in = data.get("expires_in")
+        if isinstance(expires_in, int):
+            days = max(1, expires_in // 86400 - 1)
+            iso.expiry_date = add_days(nowdate(), days)
+        else:
+            iso.expiry_date = add_days(nowdate(), 25)
+
+        iso.save(ignore_permissions=True)
+        frappe.db.commit()
+
+        # ✅ Force cache clear + reload
+        frappe.clear_cache(doctype="ISO Setting")
+        iso.reload()
+
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), "GSP Token Update Failed")
+        frappe.throw(
+            "GSP Token Update Failed. Check gspappid/gspappsecret and your internet/DNS."
+        )
 
 
 @frappe.whitelist()
-def fetch_gst_data(gst_no):
-    # Generate a random 8-character string for request ID
-    random_string = str(uuid.uuid4()).replace('-', '')[:8]
+def fetch_gst_data(gst_no: str):
+    """Fetch GST details from Adaequare Enriched EWB API."""
+    token = get_valid_token()
+    iso = frappe.get_single("ISO Setting")
 
-    # API endpoint with GST number
-    url = f"https://gsp.adaequare.com/test/enriched/ewb/master/GetGSTINDetails?GSTIN={gst_no}"
+    # Use test environment like your Postman screenshot; change to prod when ready.
+    url = f"{BASE_URL}/test/enriched/ewb/master/GetGSTINDetails?GSTIN={gst_no}"
+    req_id = uuid.uuid4().hex[:12]
 
-    # Fetch token from ISO Settings doctype
-    token = frappe.db.get_single_value('ISO Settings', 'authorization')
-
-    # Prepare headers for the API request
     headers = {
-        "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
-        "Username": frappe.db.get_single_value('ISO Settings', 'username'),
-        "Password": frappe.db.get_single_value('ISO Settings', 'password'),
-        "gstin": "05AAACG2115R1ZN",  # Static GSTIN (as per your example)
-        "requestid": random_string
+        "username": iso.username,
+        "password": iso.password,
+        "gstin": iso.username,
+        "requestid": req_id,
+        "Authorization": f"Bearer {token}",  # ✅ don't forget the 'Bearer ' prefix
     }
+
     try:
-        # Send GET request to the GST API
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            # Return the API response JSON directly
-            result = response.json()
-            return result
+        resp = requests.get(url, headers=headers, timeout=30)
+        frappe.logger().info(f"GST GET status={resp.status_code}, body={resp.text[:500]}")
+        if resp.status_code == 200:
+            data = resp.json()
+            return {"result": data.get("result")}
         else:
-            # Return error message if API response code is not 200
-            return {"error": f"API request failed with status code {response.status_code}"}
+            frappe.log_error(resp.text, "GST API Error")
+            return {"error": f"API failed with status code {resp.status_code}", "details": resp.text}
     except requests.exceptions.RequestException as e:
-        # Log error if request fails and return error message
-        frappe.log_error(f"GST API call failed: {str(e)}", "GST API Error")
+        frappe.log_error(str(e), "GST API Error")
         return {"error": "Failed to connect to GST API"}
