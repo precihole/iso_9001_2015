@@ -108,10 +108,10 @@
         text-align: center;
       }
 
-      .btn:hover {
+      /* .btn:hover {
         background-color: #0f4bee;
         color: white;
-      }
+      } */
 
       @media (max-width: 768px) {
         .btn {
@@ -146,7 +146,7 @@
               <span class="serial-no">S.No: {{ purchase_order.index }}</span>
             </div>
             <div class="card-subheader">
-              <span>PO No: {{ purchase_order.name }}</span>
+              <span>PO No: {{ purchase_order.po_name }}</span>
               <span>Date: {{ purchase_order.formatted_transaction_date }}</span>
             </div>
             <p><strong>Item Code:</strong> {{ purchase_order.item_code }}</p>
@@ -159,8 +159,11 @@
             <p><strong>Rework Qty:</strong> {{ purchase_order.total_rework }}</p>
             <p><strong>Reject Qty:</strong> {{ purchase_order.total_reject }}</p>
             <p><strong>Pending Qty:</strong> {{ purchase_order.pending_qty }}</p>
+
+            {% if purchase_order.po_type != "Sub-Contract" %}
             <p><strong>RM Received Qty:</strong> {{ purchase_order.rm_received_qty }}</p>
             <p><strong>RM Balance Qty:</strong> {{ purchase_order.rm_balance_qty }}</p>
+            {% endif %}
 
             {% if purchase_order.po_type == "Sub-Contract" %}
             <p><strong>RM Received Qty:</strong> {{ purchase_order.rm_received_qty }}</p>
