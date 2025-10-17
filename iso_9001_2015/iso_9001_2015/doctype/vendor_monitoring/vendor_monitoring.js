@@ -363,3 +363,6 @@ function calculateTotalPercentage(frm) {
     frm.set_value('total_percentage', total_percentage.toFixed(2));
     frm.refresh_field('total_percentage');
 }
+
+
+

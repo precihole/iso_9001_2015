@@ -172,17 +172,22 @@
 
             <p><strong>Lead Time Days:</strong> {{ purchase_order.lead_time_days }}</p>
             <p><strong>Days From PO:</strong> {{ purchase_order.number_of_days_from_po }}</p>
+            <p><strong>Follow-Up Sent:</strong> <span class="followup-count">{{ (purchase_order.followup_count || 0) }}</span></p>
+
           </div>
           <div class="card-footer">
             <button
               class="btn msgprint-btn"
               data-supplier="{{ purchase_order.supplier }}"
               data-email="{{ purchase_order.contact_email }}"
-              data-po="{{ purchase_order.name }}"
+              data-po="{{ purchase_order.po_name }}"
               data-schedule-date="{{ purchase_order.schedule_date }}"
+              data-item-name="{{ purchase_order.item_name }}"
+              data-item-code="{{ purchase_order.item_code }}"
             >
               Follow Up
             </button>
+
 
           </div>
         </div>
