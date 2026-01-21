@@ -1,0 +1,225 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:SUP-EVAL-{YYYY}-{####}",
+ "creation": "2026-01-13 17:03:32.395607",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_qug5",
+  "amended_from",
+  "supplier_name",
+  "address",
+  "column_break_mgyy",
+  "posting_date",
+  "company_website",
+  "year_of_establishment",
+  "mobile_no",
+  "telephone_no",
+  "section_break_wmsg",
+  "contact_html",
+  "section_break_noer",
+  "supplier_evaluation_system_details",
+  "total_count",
+  "score",
+  "achievement",
+  "section_break_klug",
+  "manufacturing_facility_details",
+  "section_break_yuqw",
+  "guidelines_for_grading",
+  "section_break_xndk",
+  "supplier_classification_based_on_achievement",
+  "section_break_lssj",
+  "supplier_status",
+  "column_break_ktad",
+  "remarks",
+  "section_break_hekb",
+  "audit_attendance_and_signoff"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_qug5",
+   "fieldtype": "Section Break",
+   "label": "SUPPLIER DETAILS"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Supplier Evaluation",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "supplier_name",
+   "fieldtype": "Link",
+   "label": "Supplier Name",
+   "options": "Supplier"
+  },
+  {
+   "fetch_from": "supplier_name.primary_address",
+   "fieldname": "address",
+   "fieldtype": "Text",
+   "label": "Address"
+  },
+  {
+   "fieldname": "column_break_mgyy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date"
+  },
+  {
+   "fetch_from": "supplier_name.website",
+   "fieldname": "company_website",
+   "fieldtype": "Data",
+   "label": "Company Website"
+  },
+  {
+   "fieldname": "year_of_establishment",
+   "fieldtype": "Date",
+   "label": "Year of Establishment"
+  },
+  {
+   "default": "+91-",
+   "fieldname": "mobile_no",
+   "fieldtype": "Phone",
+   "label": "Mobile No."
+  },
+  {
+   "fieldname": "telephone_no",
+   "fieldtype": "Int",
+   "label": "Telephone No."
+  },
+  {
+   "fieldname": "section_break_wmsg",
+   "fieldtype": "Section Break",
+   "label": "PRIMARY CONTACTS"
+  },
+  {
+   "fieldname": "contact_html",
+   "fieldtype": "HTML",
+   "label": "Contact"
+  },
+  {
+   "fieldname": "section_break_noer",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "supplier_evaluation_system_details",
+   "fieldtype": "Table",
+   "label": "Supplier Evaluation System Details",
+   "options": "Supplier Evaluation system Details"
+  },
+  {
+   "fieldname": "total_count",
+   "fieldtype": "Int",
+   "label": "Total Count",
+   "read_only": 1
+  },
+  {
+   "fieldname": "score",
+   "fieldtype": "Int",
+   "label": "Score",
+   "read_only": 1
+  },
+  {
+   "fieldname": "achievement",
+   "fieldtype": "Percent",
+   "label": "Achievement",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_klug",
+   "fieldtype": "Section Break",
+   "label": "MANUFACTURING FACILITY & CURRENT PROCESSES"
+  },
+  {
+   "fieldname": "manufacturing_facility_details",
+   "fieldtype": "Table",
+   "label": "Manufacturing Facility Details",
+   "options": "Manufacturing Facility Details"
+  },
+  {
+   "fieldname": "section_break_yuqw",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "guidelines_for_grading",
+   "fieldtype": "HTML",
+   "label": "Guidelines for Grading"
+  },
+  {
+   "fieldname": "section_break_xndk",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "supplier_classification_based_on_achievement",
+   "fieldtype": "HTML",
+   "label": "Supplier Classification Based on Achievement (%)"
+  },
+  {
+   "fieldname": "section_break_lssj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "supplier_status",
+   "fieldtype": "Data",
+   "label": "Supplier status"
+  },
+  {
+   "fieldname": "column_break_ktad",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "section_break_hekb",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "audit_attendance_and_signoff",
+   "fieldtype": "Table",
+   "label": "Audit Attendance and Signoff",
+   "options": "Audit Attendance and Sign-off"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-01-21 17:01:32.153303",
+ "modified_by": "Administrator",
+ "module": "Iso 9001 2015",
+ "name": "Supplier Evaluation",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
