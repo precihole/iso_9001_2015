@@ -96,22 +96,43 @@
         border-top: 1px solid #ddd; /* Adds a line */
       }
 
-      .btn {
+      /* .msgprint-btn {
         font-size: 12px;
-        background-color: #0673e7;
+        background-color: hsl(0, 0%, 0%);
         color: #fff;
         border: none;
-        border-radius: 3px;
+        border-radius: 4px;
         cursor: pointer;
         display: block;
         width: 100%;
         text-align: center;
+      } */
+
+
+      .msgprint-btn {
+        font-size: 12px;
+        background-color: #000;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        width: 100%;
+        text-align: center;
+        transition: background-color 0.15s ease;
       }
 
-      /* .btn:hover {
-        background-color: #0f4bee;
-        color: white;
-      } */
+      /* IMPORTANT: override ERPNext hover */
+      .msgprint-btn:hover,
+      .msgprint-btn:focus,
+      .msgprint-btn:active {
+        background-color: #000 !important;
+        color: #fff !important;
+        opacity: 1 !important;
+        box-shadow: none !important;
+        outline: none !important;
+      }
+
+
+
 
       @media (max-width: 768px) {
         .btn {
