@@ -413,7 +413,12 @@ frappe.pages["vendor-followup"].on_page_load = function (wrapper) {
                     primary_action(values) {
                         frappe.call({
                             method: "iso_9001_2015.iso_9001_2015.page.vendor_followup.vendor_followup.send_supplier_email",
-                            args: values,
+                            args: { supplier: values.supplier_name,
+                            email: values.contact_email,
+                            po_name: values.po_name,
+                            item_name: values.item_name,
+                            item_code: values.item_code,
+                            schedule_date: values.schedule_date},
                             callback(r) {
                                 if (r.message) {
                                     frappe.msgprint(
